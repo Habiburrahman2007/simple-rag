@@ -1,0 +1,551 @@
+{
+  "name": "RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        160,
+        144
+      ],
+      "id": "bffadbda-601a-4806-83de-caa2d0934ed9",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "klMJqo2ltYxhZtRt",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=Anda adalah asisten AI yang cerdas dan membantu. Tugas utama Anda adalah menjawab pertanyaan pengguna berdasarkan dokumen yang tersimpan di basis pengetahuan (Knowledge Base).\n\nAturan menjawab:\n1. Gunakan informasi dari \"Knowledge Retrieval\" untuk menjawab pertanyaan.\n2. Jika jawaban tidak ada di dalam dokumen, katakan dengan jujur bahwa Anda tidak tahu. Jangan mengarang jawaban (halusinasi).\n3. Jawablah dengan gaya bahasa yang ramah, sopan, dan sesuai dengan bahasa yang digunakan pengguna (Bahasa Indonesia).\n4. Selalu prioritaskan konteks dari dokumen daripada pengetahuan umum Anda jika terjadi perbedaan informasi.\n5. Gunakan riwayat percakapan untuk memahami konteks obrolan yang sedang berlangsung.\n6. Tambahkan minimal 1 emoji yang relevan untuk setiap respon yang kau berikan."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        -64
+      ],
+      "id": "70eff095-14dc-4ed8-9583-446ec5f27baa",
+      "name": "Cognitive Core"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Menjawab pertanyaan sesuai data",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        96
+      ],
+      "id": "bd329e1b-bc46-413a-ad5f-31cbd8712e23",
+      "name": "Knowledge Retrieval",
+      "credentials": {
+        "supabaseApi": {
+          "id": "DHFWjPou34q2n9qY",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        144
+      ],
+      "id": "9a734777-bfc9-4c3f-a91c-a1211de85df9",
+      "name": "Session History",
+      "credentials": {
+        "postgres": {
+          "id": "BEml8IptHEr8aWdJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        368
+      ],
+      "id": "a2bbea39-4d4a-4cb9-9cdc-330d3b25623a",
+      "name": "Text Embeddings",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "klMJqo2ltYxhZtRt",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        432,
+        256
+      ],
+      "id": "0fb43c08-4b67-47f3-b97a-3d85a911f701",
+      "name": "Text Embeddings to",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "klMJqo2ltYxhZtRt",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -336,
+        368
+      ],
+      "id": "6deb32d2-93c1-4237-92a1-166e01985edc",
+      "name": "Document Loader"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -528,
+        192
+      ],
+      "id": "564ae331-07dc-405e-abfb-ab7eb42614a2",
+      "name": "Document Ingestion",
+      "credentials": {
+        "supabaseApi": {
+          "id": "DHFWjPou34q2n9qY",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7764802870:AAFLug_iLRjHe8Lp_0DoVzczQInsPpx_N5I/getFile?file_id={{ $json.message.document.file_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -512,
+        -80
+      ],
+      "id": "d1b76125-022f-4faf-ba37-3bff62594ffa",
+      "name": "Get Path"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot7764802870:AAFLug_iLRjHe8Lp_0DoVzczQInsPpx_N5I/{{ $json.result.file_path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -352,
+        -80
+      ],
+      "id": "29c4f3eb-0dde-472e-b3c5-eab487f64b83",
+      "name": "Downlaod"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  if (item.binary && item.binary.data) {\n    item.binary.data.mimeType = 'application/pdf';\n    item.binary.data.fileExtension = 'pdf';\n  }\n}\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -80
+      ],
+      "id": "cf5c28cf-d3ca-452d-add5-b17d0e26d636",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5e9a0dbf-2d8d-4bb9-90c2-ecc3a08f9e14",
+              "leftValue": "={{ $json.message.document.file_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -752,
+        -64
+      ],
+      "id": "40972606-d2a1-4d53-b4a6-3c33a895878c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Input Document').item.json.message.chat.id }}",
+        "text": "Dokumen berhasil ditambahkan sebagai basis data Chatbot RAG. 😊",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        192
+      ],
+      "id": "5a2a97ec-7098-45d3-9409-759d33f13aa5",
+      "name": "Send a text message2",
+      "webhookId": "680840bd-be60-474f-b294-716365a7fd20",
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "n18uIjqv6naD58Qd",
+          "name": "Telegram account 11"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        -64
+      ],
+      "id": "df7d3525-bcef-4fd6-95b5-316c1f32501a",
+      "name": "Query Receiver",
+      "webhookId": "29b76cca-ee9f-45fd-a17f-5d16d32ec6cc",
+      "credentials": {
+        "telegramApi": {
+          "id": "FOX8yN6C3AOq0FR5",
+          "name": "Telegram account 12"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Query Receiver').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        -64
+      ],
+      "id": "12d41d54-4673-474c-b499-13c94ab9f85b",
+      "name": "Answer Message",
+      "webhookId": "b5971e5a-d6cb-4fd1-8392-631aaae80e0f",
+      "credentials": {
+        "telegramApi": {
+          "id": "FOX8yN6C3AOq0FR5",
+          "name": "Telegram account 12"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -960,
+        -64
+      ],
+      "id": "4b8ed57a-1ce0-4d10-854d-41838c5e7ffb",
+      "name": "Input Document",
+      "webhookId": "0be63f7d-b012-454e-9eec-a49d2fdf3287",
+      "credentials": {
+        "telegramApi": {
+          "id": "n18uIjqv6naD58Qd",
+          "name": "Telegram account 11"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=Sistem tidak menerima teks, gambar, video, dan audio.❌\nMohon kirimkan data dalam format dokumen.🙏",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -784,
+        192
+      ],
+      "id": "5c1fdfcd-57dc-4ce8-bd5f-cb426a4443a9",
+      "name": "False Message",
+      "webhookId": "48c32057-96fa-49ea-ab7e-2a03833c4232",
+      "credentials": {
+        "telegramApi": {
+          "id": "n18uIjqv6naD58Qd",
+          "name": "Telegram account 11"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Cognitive Core",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Knowledge Retrieval": {
+      "ai_tool": [
+        [
+          {
+            "node": "Cognitive Core",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Session History": {
+      "ai_memory": [
+        [
+          {
+            "node": "Cognitive Core",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Document Ingestion",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Embeddings to": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Knowledge Retrieval",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Document Ingestion",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Path": {
+      "main": [
+        [
+          {
+            "node": "Downlaod",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Downlaod": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Document Ingestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cognitive Core": {
+      "main": [
+        [
+          {
+            "node": "Answer Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get Path",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "False Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Receiver": {
+      "main": [
+        [
+          {
+            "node": "Cognitive Core",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Document": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "dd8aa589-f851-4fca-b479-a9d1c2839978",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fd360832eea0a6483e108420219b9377891f180ecb79896a049795824992ad50"
+  },
+  "id": "p809Pd6ui3iknSeo",
+  "tags": [
+    {
+      "updatedAt": "2026-02-24T10:21:15.847Z",
+      "createdAt": "2026-02-24T10:21:15.847Z",
+      "id": "a5Wry0xvhyGMYHRI",
+      "name": "cs"
+    },
+    {
+      "updatedAt": "2026-03-01T14:38:35.315Z",
+      "createdAt": "2026-03-01T14:38:35.315Z",
+      "id": "wiaypFQjpgYq7syF",
+      "name": "ai"
+    }
+  ]
+}
