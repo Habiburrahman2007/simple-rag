@@ -1,84 +1,112 @@
-Telegram AI RAG Chatbot (n8n Workflow)
-Repositori ini berisi workflow n8n untuk membangun Chatbot AI berbasis Retrieval-Augmented Generation (RAG). Chatbot ini memungkinkan pengguna untuk mengunggah dokumen PDF melalui Telegram, menyimpannya ke dalam Vector Store, dan melakukan tanya jawab berdasarkan isi dokumen tersebut secara cerdas.
+# 🤖 Telegram AI RAG Chatbot (n8n Workflow)
 
-🚀 Fitur Utama
-Document Ingestion: Mengunduh otomatis dokumen PDF yang dikirim melalui Telegram.
+Repositori ini berisi workflow **n8n** untuk membangun chatbot AI berbasis **Retrieval-Augmented Generation (RAG)**.  
+Chatbot ini memungkinkan pengguna untuk mengunggah dokumen PDF melalui Telegram, menyimpannya ke dalam Vector Store, serta melakukan tanya jawab secara cerdas berdasarkan isi dokumen tersebut.
 
-Vector Search: Menggunakan Supabase Vector Store untuk penyimpanan dan pencarian dokumen yang relevan.
+---
 
-AI Engine: Ditenagai oleh Gemini 2.5 Flash Lite untuk pemrosesan teks yang cepat dan akurat.
+## 🚀 Fitur Utama
 
-Memory History: Menyimpan riwayat percakapan menggunakan PostgreSQL agar chatbot memahami konteks obrolan.
+- 📄 **Document Ingestion**  
+  Mengunduh dan memproses otomatis dokumen PDF yang dikirim melalui Telegram.
 
-Validation: Sistem validasi yang memastikan hanya file dokumen yang diproses.
+- 🔍 **Vector Search**  
+  Menggunakan **Supabase Vector Store** untuk penyimpanan dan pencarian dokumen relevan.
 
-🛠️ Arsitektur Workflow
-Workflow ini terdiri dari dua jalur utama:
+- 🧠 **AI Engine**  
+  Ditenagai oleh **Gemini 2.5 Flash Lite** untuk pemrosesan teks yang cepat dan akurat.
 
-1. Jalur Ingesti Data (Knowledge Base)
-Input Document: Trigger saat pengguna mengirim file ke bot Telegram.
+- 💬 **Memory History**  
+  Menyimpan riwayat percakapan menggunakan PostgreSQL agar chatbot memahami konteks.
 
-HTTP Request: Mengambil file dari server Telegram API.
+- ✅ **Validation System**  
+  Memastikan hanya file dokumen (PDF) yang diproses.
 
-JavaScript Code: Mengonversi file menjadi format yang siap dibaca (MIME Type: PDF).
+---
 
-Document Ingestion: Melakukan embedding teks menggunakan model gemini-embedding-001 dan menyimpannya ke tabel documents di Supabase.
+## 🛠️ Arsitektur Workflow
 
-2. Jalur Query (Chatting)
-Query Receiver: Trigger saat pengguna mengirim pesan teks.
+Workflow ini terdiri dari **dua jalur utama**:
 
-Cognitive Core (Agent): Otak AI yang memutuskan kapan harus mengambil data dari Knowledge Base.
+### 1️⃣ Jalur Ingesti Data (Knowledge Base)
 
-Knowledge Retrieval: Mencari potongan teks paling relevan di Supabase berdasarkan query pengguna.
+- **Input Document**  
+  Trigger saat pengguna mengirim file ke bot Telegram.
 
-Session History: Mengambil konteks pesan sebelumnya dari database Postgres.
+- **HTTP Request**  
+  Mengambil file dari server Telegram API.
 
-Answer Message: Mengirimkan jawaban final kembali ke pengguna di Telegram.
+- **JavaScript Code**  
+  Mengonversi file menjadi format yang siap dibaca (MIME Type: PDF).
 
-📋 Prasyarat
+- **Document Ingestion**  
+  Melakukan embedding teks menggunakan model `gemini-embedding-001` dan menyimpannya ke tabel `documents` di Supabase.
+
+---
+
+### 2️⃣ Jalur Query (Chatting)
+
+- **Query Receiver**  
+  Trigger saat pengguna mengirim pesan teks.
+
+- **Cognitive Core (Agent)**  
+  Otak AI yang menentukan kapan perlu mengambil data dari Knowledge Base.
+
+- **Knowledge Retrieval**  
+  Mencari potongan teks paling relevan di Supabase berdasarkan query pengguna.
+
+- **Session History**  
+  Mengambil konteks percakapan sebelumnya dari PostgreSQL.
+
+- **Answer Message**  
+  Mengirimkan jawaban final kembali ke pengguna melalui Telegram.
+
+---
+
+## 📋 Prasyarat
+
 Sebelum mengimpor workflow ini, pastikan Anda memiliki:
 
-n8n (Self-hosted atau Cloud).
+- n8n (Self-hosted atau Cloud)
+- API Key Google Gemini (untuk LLM & Embeddings)
+- Bot Token Telegram (dari **@BotFather**)
+- Database Supabase (dengan ekstensi `pgvector`)
+- Database PostgreSQL (untuk session memory)
 
-API Key Google Gemini (untuk LLM dan Embeddings).
+---
 
-Bot Token Telegram (didapat dari @BotFather).
+## ⚙️ Cara Instalasi
 
-Database Supabase (dengan ekstensi pgvector aktif).
+1. Salin isi file `RAG.json` dari repositori ini  
+2. Buka dashboard n8n Anda  
+3. Pilih **Import from JSON**  
+4. Tempelkan kode workflow  
+5. Konfigurasikan credentials untuk:
+   - Google Gemini API
+   - Telegram API
+   - Supabase API
+   - PostgreSQL
+6. Sesuaikan nama tabel pada node:
+   - `Document Ingestion`
+   - `Knowledge Retrieval`  
+   (default: `documents`)
+7. Aktifkan workflow
 
-Database PostgreSQL (untuk menyimpan session memory).
+---
 
-⚙️ Cara Instalasi
-Salin isi file RAG.json dari repositori ini.
+## 🤖 Instruksi System Message
 
-Buka dashboard n8n Anda.
+Chatbot ini dikonfigurasi dengan aturan berikut:
 
-Pilih Import from JSON dan tempelkan kodenya.
+- 📚 Hanya menjawab berdasarkan dokumen yang tersedia  
+- ❌ Jika tidak ditemukan, AI akan jujur mengatakan tidak tahu (anti-halusinasi)  
+- 💬 Menggunakan Bahasa Indonesia yang ramah dan sopan  
+- 😊 Wajib menyertakan minimal 1 emoji yang relevan  
 
-Konfigurasikan Credentials untuk masing-masing node:
+---
 
-Google Gemini(PaLM) Api
+## 👨‍💻 Author
 
-Telegram Api
-
-Supabase Api
-
-Postgres
-
-Sesuaikan nama tabel di node Document Ingestion dan Knowledge Retrieval (default: documents).
-
-Aktifkan workflow.
-
-🤖 Instruksi System Message
-AI ini telah dikonfigurasi dengan aturan khusus:
-
-Hanya menjawab berdasarkan dokumen yang tersedia.
-
-Jika tidak ada di dokumen, AI akan jujur mengatakan tidak tahu (mencegah halusinasi).
-
-Gaya bahasa ramah, sopan, dan menggunakan Bahasa Indonesia.
-
-Wajib menyertakan minimal 1 emoji yang relevan.
-
-Developed by Muhammad Habiburrahman Al-Arif
-Student of Software Engineering | Full-stack Developer | Automation Enthusiast
+**Muhammad Habiburrahman Al-Arif**  
+Student of Software Engineering  
+Full-stack Developer | Automation Enthusiast
